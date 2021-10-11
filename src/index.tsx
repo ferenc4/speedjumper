@@ -1,73 +1,42 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
-import {Game, Types} from 'phaser';
-import {LoadingScene} from './scenes';
+import Phaser from "phaser";
+import logoImg from "./assets/sprites/drink.png";
+import React from "react";
+import ReactDOM from "react-dom";
+import App from "./App";
+import {Scene, GameObjects} from 'phaser';
 
-ReactDOM.render(
-    <React.StrictMode>
-        <App/>
-    </React.StrictMode>,
-    document.getElementById('root')
-);
+export class MyScene extends Scene {
+    private drink!: GameObjects.Image;
+    private prevFrame!: number;
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+    constructor() {
+        super('loading-scene');
+    }
 
-declare global {
-    interface Window {
-        sizeChanged: () => void;
-        game: Phaser.Game;
+    preload() {
+        this.load.image("logo", logoImg);
+    }
+
+    create() {
+        this.drink = this.add.image(window.innerWidth / 2, window.innerHeight / 2, "logo")
+    }
+
+    update(ts: number, delta:number) {
+        if (this.prevFrame != undefined) {
+            this.drink.x += 1;
+        }
+        this.prevFrame = ts;
     }
 }
 
-const gameConfig: Types.Core.GameConfig = {
-    title: 'Phaser game tutorial',
-    type: Phaser.WEBGL,
-    parent: 'game',
-    backgroundColor: '#351f1b',
-    scale: {
-        mode: Phaser.Scale.ScaleModes.NONE,
-        width: window.innerWidth,
-        height: window.innerHeight,
-    },
-    physics: {
-        default: 'arcade',
-        arcade: {
-            debug: false,
-        },
-    },
-    render: {
-        antialiasGL: false,
-        pixelArt: true,
-    },
-    callbacks: {
-        postBoot: () => {
-            window.sizeChanged();
-        },
-    },
-    canvasStyle: `display: block; width: 100%; height: 100%;`,
-    autoFocus: true,
-    audio: {
-        disableWebAudio: false,
-    },
-    scene: [LoadingScene],
+const config = {
+    type: Phaser.AUTO,
+    parent: "phaser-example",
+    width: window.innerWidth,
+    height: window.innerHeight,
+    scene: new MyScene()
 };
+const game = new Phaser.Game(config);
 
-window.game = new Game(gameConfig)
-window.sizeChanged = () => {
-    if (window.game.isBooted) {
-        setTimeout(() => {
-            window.game.scale.resize(window.innerWidth, window.innerHeight);
-            window.game.canvas.setAttribute(
-                'style',
-                `display: block; width: ${window.innerWidth}px; height: ${window.innerHeight}px;`,
-            );
-        }, 100);
-    }
-};
-window.onresize = () => window.sizeChanged();
+
+ReactDOM.render(<App/>, document.getElementById("root"));

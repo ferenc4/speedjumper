@@ -1,109 +1,51 @@
-const path = require('path');
-const {CleanWebpackPlugin} = require('clean-webpack-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const TerserPlugin = require('terser-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
-
-const isProd = process.env.NODE_ENV === 'production';
-
-const babelOptions = {
-    presets: [
-        [
-            '@babel/preset-env',
-            {
-                targets: 'last 2 versions, ie 11',
-                modules: false,
-            },
-        ],
-    ],
-};
-const config = {
-    mode: isProd ? 'production' : 'development',
-    context: path.resolve(__dirname, './src'),
-    entry: './index.ts',
-
+module.exports = {
+    mode: "development",
+    devtool: "eval-source-map",
+    entry: "./src/index.js",
     output: {
-        path: path.resolve(__dirname, 'dist'),
-        filename: 'bundle.js',
+        path: path.resolve("dist"),
+        filename: "index_bundle.js"
     },
-
     module: {
         rules: [
             {
-                test: /.ts(x)?$/,
-                exclude: /node_modules/,
-                use: [
-                    {
-                        loader: 'babel-loader',
-                        options: babelOptions,
-                    },
-                    {
-                        loader: 'ts-loader',
-                    },
-                ],
-            },
-            {
-                test: /.html$/,
-                use: [
-                    {
-                        loader: 'html-loader',
-                    },
-                ],
-            },
-            {
                 test: /.css$/,
-                use: ['style-loader', 'css-loader'],
+                use: [{ loader: "style-loader" }, { loader: "css-loader" }]
             },
-        ],
+            {
+                test: /.js$/,
+                exclude: /node_modules/,
+                use: {
+                    loader: "babel-loader"
+                }
+            },
+            {
+                test: /.jsx?$/,
+                exclude: /node_modules/,
+                use: "babel-loader"
+            },
+            {
+                test: [/.vert$/, /.frag$/],
+                use: "raw-loader"
+            },
+            {
+                test: /.(gif|png|jpe?g|svg|xml)$/i,
+                use: "file-loader"
+            }
+        ]
     },
-
-    resolve: {
-        extensions: ['.ts', '.js'],
-    },
-
-    optimization: {
-        minimize: true,
-        minimizer: [
-            new TerserPlugin({
-                extractComments: false,
-                terserOptions: {
-                    output: {
-                        comments: false,
-                    },
-                },
-            }),
-        ],
-    },
-
     plugins: [
-        new CleanWebpackPlugin(),
-        new HtmlWebpackPlugin({
-            template: 'index.html',
-            inject: true,
-            title: 'Phaser Webpack Template',
-            appMountId: 'app',
-            filename: 'index.html',
-            inlineSource: '.(js|css)$',
-            minify: false,
+        new CleanWebpackPlugin(["dist"], {
+            root: path.resolve(__dirname, "../")
         }),
-        new CopyWebpackPlugin({
-            patterns: [
-                {
-                    from: 'assets',
-                    to: 'assets',
-                },
-            ],
+        new webpack.DefinePlugin({
+            CANVAS_RENDERER: JSON.stringify(true),
+            WEBGL_RENDERER: JSON.stringify(true)
+        }),
+        new HtmlWebpackPlugin({
+            template: "./index.html",
+            filename: "index.html",
+            inject: "body"
         })
-    ],
-
-    devServer: {
-        // contentBase: path.join(__dirname, 'dist'),
-        static: '/'
-        // inline: true,
-        // hot: true
-        // overlay: true,
-    },
+    ]
 };
-
-
-module.exports = config;
